@@ -1,0 +1,38 @@
+name: Check Flats
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Запуск щогодини
+  workflow_dispatch:     # Кнопка для ручного запуску
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write    # Даємо право на запис файлів
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Завантажуємо всю історію, щоб уникнути помилок [rejected]
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run monitor
+        run: python monitor.py
+
+      - name: Save state
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add seen_ids.txt
+          # Цей рядок "мирить" бота з сервером перед записом:
+          git pull origin main --rebase || echo "No changes to pull"
+          git commit -m "Update seen IDs [skip ci]" || exit 0
+          # Силовий пуш, щоб пробити помилку [rejected]:
+          git push origin main --force
