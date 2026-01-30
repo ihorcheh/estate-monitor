@@ -1,3 +1,8 @@
+if not TOKEN:
+    print("ПОМИЛКА: GitHub не передав TELEGRAM_TOKEN!")
+if not CHAT_ID:
+    print("ПОМИЛКА: GitHub не передав CHAT_ID!")
+
 import cloudscraper
 from bs4 import BeautifulSoup
 import time
